@@ -4,6 +4,7 @@
 *   Must be compiled with C++ 11 or higher version.
 *
 *   2020-08-03  Updating annotation.
+*   2020-11-12  Updating class function "CaseMessage"
 *
 *   Design by Cheng-Yung-Sheng
 *
@@ -73,13 +74,37 @@ public:
     //  Ideal process is that "RunFunction" runs tested function once and store result in r_v.
     virtual void RunFunction(const para_tuple &para, return_type &r_v) = 0;
 
-    //  Virtual function for producing case's message.User must re-write before correctly using it.
+    //  Virtual unction for producing case's message.Users are recommanded to re-write before correctly using it.
+    //  If user doesn't re-write,parameter would be unable to display.
     //  It's for costumized display case information with consiceness.
     //  1st,2nd and 3rd parameter is tuple of tested function's parameters,vector of expected return values
     //      and actually return value, respectively.
-    virtual std::string CaseMessage(const para_tuple &para, const std::vector<return_type> &e_v, const return_type &r_v) = 0;
+    //virtual std::string CaseMessage(const para_tuple &para, const std::vector<return_type> &e_v, const return_type &r_v) = 0;
+    virtual std::string CaseMessage(const para_tuple &para, const std::vector<return_type> &e_v, const return_type &r_v)
+    {
+        std::stringstream ss;
+        ss.str("");
+        ss.clear();
 
-    //  Virtual function for distinguishing if 2 returned value equal.
+        ss << "expected value=";
+        if (e_v.size() <= 1)
+        {
+            ss << "\"" << e_v.at(0) << "\"" << std::endl;
+        }
+        else
+        {
+            for (int i = 0; i < e_v.size(); i++)
+                ss << std::endl
+                   << e_v.size();
+            ss << std::endl;
+        }
+
+        ss << "return value=\"" << r_v << "\"" << std::endl;
+
+        return ss.str();
+    };
+
+    //  Function for distinguishing if 2 returned value equal.
     //  User can re-write or using default compare operation.
     //  2 parameter with type of return_type is compared values.
     virtual int IsEqual(const return_type &a1, const return_type &a2) { return a1 == a2; };
@@ -268,8 +293,10 @@ public:
     //  Deciding whether all test cases run as expected.
     //  User had better call member function "Run()" before call this function.
     int IsAllMatched() { return (MatchedNum()) ? ((UnmatchedNum()) ? 0 : 1) : 0; };
+    int IsSafe() { return IsAllMatched(); };
 
 public:
+    //  A enumeration to record whether test return value fit respected value
     enum AnswerFit
     {
         UNFIT = 0,
@@ -277,7 +304,14 @@ public:
     };
 
 private:
+    //  Class member to record test cases.
+    //  First member of std::pair is function's parameter.
+    //  Second member of std::pair is test cases' expected value.
     std::vector<std::pair<para_tuple, std::vector<return_type>>> test_case_;
+
+    //  Class member to record test result.
+    //  First member of std::pair is fit or not(with expected value).
+    //  Sencond one is return value of test.
     std::vector<std::pair<AnswerFit, return_type>> test_result_;
 };
 
